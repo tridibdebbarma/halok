@@ -1,8 +1,13 @@
+-- ==========================================
+-- Halok Construction — Database Schema
+-- Safe to re-run (uses IF NOT EXISTS)
+-- ==========================================
+
 -- Extension for UUID generation
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. Site Settings (Global configurations)
-CREATE TABLE public.site_settings (
+CREATE TABLE IF NOT EXISTS public.site_settings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   site_name TEXT NOT NULL,
   tagline TEXT,
@@ -14,7 +19,7 @@ CREATE TABLE public.site_settings (
 );
 
 -- 2. Company Profile
-CREATE TABLE public.company_profile (
+CREATE TABLE IF NOT EXISTS public.company_profile (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   description TEXT NOT NULL,
@@ -39,7 +44,7 @@ CREATE TABLE public.company_profile (
 );
 
 -- 3. Menus (Top-level Navigation)
-CREATE TABLE public.menus (
+CREATE TABLE IF NOT EXISTS public.menus (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   label TEXT NOT NULL,
   href TEXT NOT NULL,
@@ -50,7 +55,7 @@ CREATE TABLE public.menus (
 );
 
 -- 4. Sub Menus (Dropdown Navigation Items)
-CREATE TABLE public.sub_menus (
+CREATE TABLE IF NOT EXISTS public.sub_menus (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   menu_id UUID NOT NULL REFERENCES public.menus(id) ON DELETE CASCADE,
   label TEXT NOT NULL,
@@ -62,11 +67,11 @@ CREATE TABLE public.sub_menus (
 );
 
 -- 5. Services
-CREATE TABLE public.services (
+CREATE TABLE IF NOT EXISTS public.services (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
-  category TEXT NOT NULL, -- e.g., 'Residential', 'Commercial', 'General'
+  category TEXT NOT NULL,
   short_description TEXT NOT NULL,
   full_description TEXT,
   main_image_url TEXT,
@@ -79,14 +84,14 @@ CREATE TABLE public.services (
 );
 
 -- 6. Products / Materials
-CREATE TABLE public.products (
+CREATE TABLE IF NOT EXISTS public.products (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
   category TEXT NOT NULL,
   short_description TEXT,
   full_description TEXT,
-  specs JSONB, -- Flexible specs like dimensions, materials, etc.
+  specs JSONB,
   main_image_url TEXT,
   price TEXT,
   is_visible BOOLEAN DEFAULT true,
@@ -95,7 +100,7 @@ CREATE TABLE public.products (
 );
 
 -- 7. Portfolio / Projects
-CREATE TABLE public.portfolio (
+CREATE TABLE IF NOT EXISTS public.portfolio (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   title TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
@@ -114,7 +119,7 @@ CREATE TABLE public.portfolio (
 );
 
 -- 8. Hero Slides (Homepage Carousel)
-CREATE TABLE public.hero_slides (
+CREATE TABLE IF NOT EXISTS public.hero_slides (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   title TEXT NOT NULL,
   subtitle TEXT,
@@ -127,7 +132,7 @@ CREATE TABLE public.hero_slides (
 );
 
 -- 9. Team Members
-CREATE TABLE public.team_members (
+CREATE TABLE IF NOT EXISTS public.team_members (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   role TEXT NOT NULL,
@@ -139,14 +144,15 @@ CREATE TABLE public.team_members (
 );
 
 -- 10. Contacts (Form Submissions)
-CREATE TABLE public.contacts (
+CREATE TABLE IF NOT EXISTS public.contacts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT,
   subject TEXT,
   message TEXT NOT NULL,
-  status TEXT DEFAULT 'unread', -- 'unread', 'read', 'replied'
+  is_read BOOLEAN DEFAULT false,
+  status TEXT DEFAULT 'unread',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -166,7 +172,43 @@ ALTER TABLE public.hero_slides ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contacts ENABLE ROW LEVEL SECURITY;
 
--- 1. Public Read Access (Anon and Authenticated can READ everything except contacts)
+-- Drop existing policies first (safe to re-run)
+DO $$ BEGIN
+  -- site_settings
+  DROP POLICY IF EXISTS "Public read access for site_settings" ON public.site_settings;
+  DROP POLICY IF EXISTS "Admin full access for site_settings" ON public.site_settings;
+  -- company_profile
+  DROP POLICY IF EXISTS "Public read access for company_profile" ON public.company_profile;
+  DROP POLICY IF EXISTS "Admin full access for company_profile" ON public.company_profile;
+  -- menus
+  DROP POLICY IF EXISTS "Public read access for menus" ON public.menus;
+  DROP POLICY IF EXISTS "Admin full access for menus" ON public.menus;
+  -- sub_menus
+  DROP POLICY IF EXISTS "Public read access for sub_menus" ON public.sub_menus;
+  DROP POLICY IF EXISTS "Admin full access for sub_menus" ON public.sub_menus;
+  -- services
+  DROP POLICY IF EXISTS "Public read access for services" ON public.services;
+  DROP POLICY IF EXISTS "Admin full access for services" ON public.services;
+  -- products
+  DROP POLICY IF EXISTS "Public read access for products" ON public.products;
+  DROP POLICY IF EXISTS "Admin full access for products" ON public.products;
+  -- portfolio
+  DROP POLICY IF EXISTS "Public read access for portfolio" ON public.portfolio;
+  DROP POLICY IF EXISTS "Admin full access for portfolio" ON public.portfolio;
+  -- hero_slides
+  DROP POLICY IF EXISTS "Public read access for hero_slides" ON public.hero_slides;
+  DROP POLICY IF EXISTS "Admin full access for hero_slides" ON public.hero_slides;
+  -- team_members
+  DROP POLICY IF EXISTS "Public read access for team_members" ON public.team_members;
+  DROP POLICY IF EXISTS "Admin full access for team_members" ON public.team_members;
+  -- contacts
+  DROP POLICY IF EXISTS "Anyone can insert contacts" ON public.contacts;
+  DROP POLICY IF EXISTS "Authenticated users can select contacts" ON public.contacts;
+  DROP POLICY IF EXISTS "Authenticated users can update contacts" ON public.contacts;
+  DROP POLICY IF EXISTS "Authenticated users can delete contacts" ON public.contacts;
+END $$;
+
+-- Public Read Access
 CREATE POLICY "Public read access for site_settings" ON public.site_settings FOR SELECT USING (true);
 CREATE POLICY "Public read access for company_profile" ON public.company_profile FOR SELECT USING (true);
 CREATE POLICY "Public read access for menus" ON public.menus FOR SELECT USING (true);
@@ -177,15 +219,13 @@ CREATE POLICY "Public read access for portfolio" ON public.portfolio FOR SELECT 
 CREATE POLICY "Public read access for hero_slides" ON public.hero_slides FOR SELECT USING (true);
 CREATE POLICY "Public read access for team_members" ON public.team_members FOR SELECT USING (true);
 
--- 2. Contacts Policies
--- Anyone can insert a contact form submission
+-- Contacts Policies
 CREATE POLICY "Anyone can insert contacts" ON public.contacts FOR INSERT WITH CHECK (true);
--- Only authenticated users (admins) can read or update contacts
 CREATE POLICY "Authenticated users can select contacts" ON public.contacts FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Authenticated users can update contacts" ON public.contacts FOR UPDATE USING (auth.role() = 'authenticated');
 CREATE POLICY "Authenticated users can delete contacts" ON public.contacts FOR DELETE USING (auth.role() = 'authenticated');
 
--- 3. Admin Full Access (Authenticated users can INSERT, UPDATE, DELETE on all tables)
+-- Admin Full Access
 CREATE POLICY "Admin full access for site_settings" ON public.site_settings FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Admin full access for company_profile" ON public.company_profile FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Admin full access for menus" ON public.menus FOR ALL USING (auth.role() = 'authenticated');
@@ -197,10 +237,10 @@ CREATE POLICY "Admin full access for hero_slides" ON public.hero_slides FOR ALL 
 CREATE POLICY "Admin full access for team_members" ON public.team_members FOR ALL USING (auth.role() = 'authenticated');
 
 -- ==========================================
--- STORAGE BUCKETS (Need to be run in Supabase SQL editor)
+-- STORAGE BUCKET (uncomment and run separately if needed)
 -- ==========================================
--- insert into storage.buckets (id, name, public) values ('images', 'images', true);
--- create policy "Public Access" on storage.objects for select using ( bucket_id = 'images' );
--- create policy "Auth Insert" on storage.objects for insert with check ( auth.role() = 'authenticated' AND bucket_id = 'images' );
--- create policy "Auth Update" on storage.objects for update using ( auth.role() = 'authenticated' AND bucket_id = 'images' );
--- create policy "Auth Delete" on storage.objects for delete using ( auth.role() = 'authenticated' AND bucket_id = 'images' );
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('halok_media', 'halok_media', true) ON CONFLICT (id) DO NOTHING;
+-- CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'halok_media');
+-- CREATE POLICY "Auth Insert" ON storage.objects FOR INSERT WITH CHECK (auth.role() = 'authenticated' AND bucket_id = 'halok_media');
+-- CREATE POLICY "Auth Update" ON storage.objects FOR UPDATE USING (auth.role() = 'authenticated' AND bucket_id = 'halok_media');
+-- CREATE POLICY "Auth Delete" ON storage.objects FOR DELETE USING (auth.role() = 'authenticated' AND bucket_id = 'halok_media');
