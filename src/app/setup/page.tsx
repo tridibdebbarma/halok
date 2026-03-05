@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,8 @@ export default function SetupPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [done, setDone] = useState(false);
     const [error, setError] = useState("");
-    const [result, setResult] = useState<any>(null);
+    const [step, setStep] = useState("");
+    const supabase = createClient();
 
     const defaultEmail = "admin@halok.co.in";
     const defaultPassword = "Halok@2026";
@@ -20,25 +22,73 @@ export default function SetupPage() {
         setError("");
 
         try {
-            const res = await fetch("/api/setup", { method: "POST" });
-            const data = await res.json();
+            // Step 1: Try signing up
+            setStep("Creating admin account...");
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                email: defaultEmail,
+                password: defaultPassword,
+                options: {
+                    // Some Supabase projects auto-confirm if this data is provided
+                    data: { role: "admin" }
+                }
+            });
 
-            if (!res.ok || data.error) {
-                throw new Error(data.error || "Failed to create admin");
+            if (signUpError) {
+                // If already registered, try logging in directly
+                if (signUpError.message.includes("already been registered") || signUpError.message.includes("already registered")) {
+                    setStep("User already exists. Trying to sign in...");
+                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                        email: defaultEmail,
+                        password: defaultPassword,
+                    });
+
+                    if (signInError) {
+                        throw new Error(`User exists but login failed: ${signInError.message}. You may need to confirm email or reset password in Supabase Dashboard > Authentication > Users.`);
+                    }
+
+                    setDone(true);
+                    return;
+                }
+                throw signUpError;
             }
 
-            setResult(data);
-            setDone(true);
+            // Step 2: If signup succeeded, try signing in immediately
+            if (signUpData.user) {
+                setStep("Account created! Attempting sign in...");
+
+                // Check if session came back (auto-confirmed)
+                if (signUpData.session) {
+                    setDone(true);
+                    return;
+                }
+
+                // Try signing in (might work if email confirm is disabled)
+                const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                    email: defaultEmail,
+                    password: defaultPassword,
+                });
+
+                if (signInError) {
+                    throw new Error(
+                        `Account created but email confirmation is required. ` +
+                        `Go to Supabase Dashboard → Authentication → Users → find admin@halok.co.in → ` +
+                        `click the 3 dots → "Confirm email". Then try logging in at /admin/login.`
+                    );
+                }
+
+                setDone(true);
+            }
         } catch (err: any) {
             setError(err.message || "Failed to create admin user");
         } finally {
             setIsLoading(false);
+            setStep("");
         }
     }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-            <Card className="w-full max-w-md shadow-lg">
+            <Card className="w-full max-w-lg shadow-lg">
                 <CardHeader className="bg-[#1E3A5F] text-white rounded-t-xl">
                     <CardTitle className="text-white text-xl">Admin Setup</CardTitle>
                     <CardDescription className="text-blue-200">
@@ -49,8 +99,7 @@ export default function SetupPage() {
                     {done ? (
                         <div className="text-center space-y-4">
                             <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
-                            <h3 className="text-xl font-bold text-[#1E3A5F]">Admin Created Successfully!</h3>
-                            <p className="text-sm text-slate-500">{result?.message}</p>
+                            <h3 className="text-xl font-bold text-[#1E3A5F]">Admin Ready!</h3>
                             <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left space-y-2">
                                 <p className="text-sm"><strong>Email:</strong> {defaultEmail}</p>
                                 <p className="text-sm"><strong>Password:</strong> {defaultPassword}</p>
@@ -61,9 +110,6 @@ export default function SetupPage() {
                             >
                                 Go to Admin Login →
                             </a>
-                            <p className="text-xs text-red-500 font-medium">
-                                ⚠️ Delete this setup page after use for security.
-                            </p>
                         </div>
                     ) : (
                         <>
@@ -78,10 +124,29 @@ export default function SetupPage() {
                                 </div>
                             </div>
 
+                            {step && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+                                    <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                                    <p className="text-blue-700 text-sm">{step}</p>
+                                </div>
+                            )}
+
                             {error && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-                                    <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-                                    <p className="text-red-600 text-sm">{error}</p>
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                    <div className="flex items-start gap-2 mb-3">
+                                        <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                                        <p className="text-red-600 text-sm">{error}</p>
+                                    </div>
+                                    <div className="bg-white border border-red-100 rounded p-3 text-xs text-slate-600 space-y-2">
+                                        <p className="font-bold">Manual fix steps:</p>
+                                        <ol className="list-decimal ml-4 space-y-1">
+                                            <li>Go to <strong>Supabase Dashboard</strong></li>
+                                            <li>Click <strong>Authentication → Users</strong></li>
+                                            <li>Find <strong>admin@halok.co.in</strong></li>
+                                            <li>Click the <strong>3 dots (⋮)</strong> menu → <strong>&quot;Confirm email&quot;</strong></li>
+                                            <li>Then login at <a href="/admin/login" className="text-blue-600 underline">/admin/login</a></li>
+                                        </ol>
+                                    </div>
                                 </div>
                             )}
 
@@ -91,14 +156,11 @@ export default function SetupPage() {
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
-                                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Creating...</>
+                                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Setting up...</>
                                 ) : (
                                     "Create Admin User"
                                 )}
                             </Button>
-                            <p className="text-xs text-center text-slate-400">
-                                Uses the service role key to create a confirmed admin user in Supabase Auth.
-                            </p>
                         </>
                     )}
                 </CardContent>
