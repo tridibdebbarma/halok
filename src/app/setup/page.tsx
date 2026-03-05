@@ -1,17 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 
 export default function SetupPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [done, setDone] = useState(false);
     const [error, setError] = useState("");
-    const supabase = createClient();
+    const [result, setResult] = useState<any>(null);
 
     const defaultEmail = "admin@halok.co.in";
     const defaultPassword = "Halok@2026";
@@ -21,13 +20,14 @@ export default function SetupPage() {
         setError("");
 
         try {
-            const { data, error: signUpError } = await supabase.auth.signUp({
-                email: defaultEmail,
-                password: defaultPassword,
-            });
+            const res = await fetch("/api/setup", { method: "POST" });
+            const data = await res.json();
 
-            if (signUpError) throw signUpError;
+            if (!res.ok || data.error) {
+                throw new Error(data.error || "Failed to create admin");
+            }
 
+            setResult(data);
             setDone(true);
         } catch (err: any) {
             setError(err.message || "Failed to create admin user");
@@ -50,15 +50,19 @@ export default function SetupPage() {
                         <div className="text-center space-y-4">
                             <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
                             <h3 className="text-xl font-bold text-[#1E3A5F]">Admin Created Successfully!</h3>
+                            <p className="text-sm text-slate-500">{result?.message}</p>
                             <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left space-y-2">
                                 <p className="text-sm"><strong>Email:</strong> {defaultEmail}</p>
                                 <p className="text-sm"><strong>Password:</strong> {defaultPassword}</p>
                             </div>
-                            <p className="text-sm text-slate-500">
-                                You can now log in at <a href="/admin/login" className="text-blue-600 underline font-medium">/admin/login</a>
-                            </p>
+                            <a
+                                href="/admin/login"
+                                className="inline-flex items-center justify-center w-full bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-md text-base font-semibold"
+                            >
+                                Go to Admin Login →
+                            </a>
                             <p className="text-xs text-red-500 font-medium">
-                                ⚠️ Delete this setup page after creating your admin user for security.
+                                ⚠️ Delete this setup page after use for security.
                             </p>
                         </div>
                     ) : (
@@ -75,7 +79,8 @@ export default function SetupPage() {
                             </div>
 
                             {error && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                                    <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
                                     <p className="text-red-600 text-sm">{error}</p>
                                 </div>
                             )}
@@ -92,7 +97,7 @@ export default function SetupPage() {
                                 )}
                             </Button>
                             <p className="text-xs text-center text-slate-400">
-                                This will register the admin user in Supabase Auth.
+                                Uses the service role key to create a confirmed admin user in Supabase Auth.
                             </p>
                         </>
                     )}
