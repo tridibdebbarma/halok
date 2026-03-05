@@ -415,7 +415,7 @@ export default function CompanyProfilePage() {
                                         <FormItem>
                                             <FormLabel>City</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Shillong" {...field} />
+                                                <Input placeholder="Agartala" {...field} />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -427,7 +427,7 @@ export default function CompanyProfilePage() {
                                         <FormItem>
                                             <FormLabel>State</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Meghalaya" {...field} />
+                                                <Input placeholder="Tripura" {...field} />
                                             </FormControl>
                                         </FormItem>
                                     )}

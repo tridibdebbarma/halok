@@ -263,7 +263,7 @@ export default function EditPortfolioPage({ params }: { params: { id: string } }
                                                 <FormItem>
                                                     <FormLabel>Location</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="e.g. Shillong, Meghalaya" {...field} />
+                                                        <Input placeholder="e.g. Agartala, Tripura" {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>

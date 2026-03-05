@@ -207,7 +207,7 @@ export default function NewPortfolioPage() {
                                                 <FormItem>
                                                     <FormLabel>Location</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="e.g. Shillong, Meghalaya" {...field} />
+                                                        <Input placeholder="e.g. Agartala, Tripura" {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
