@@ -1,120 +1,174 @@
-"use client";
-
 import Link from "next/link";
-import { CompanyProfile } from "@/types/database";
-import { Facebook, Instagram, Linkedin, MapPin, Mail, Phone } from "lucide-react";
+import Image from "next/image";
+import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, ArrowRight } from "lucide-react";
 
 interface FooterProps {
-    companyProfile: CompanyProfile | null;
+    settings: any;
+    company: any;
+    menus: any[];
 }
 
-export default function Footer({ companyProfile }: FooterProps) {
+export default function Footer({ settings, company, menus }: FooterProps) {
+    const siteName = settings?.site_name || "Halok Construction";
+    const logoUrl = settings?.logo_url;
     const currentYear = new Date().getFullYear();
 
+    // Pick a couple of menus to show as quick links, usually the first two
+    const quickLinksMenu = menus.find(m => m.label.toLowerCase().includes("service") || m.label.toLowerCase().includes("about")) || menus[0];
+    const exploreMenu = menus.find(m => m.id !== quickLinksMenu?.id && (m.sub_menus?.length || 0) > 0) || menus[1];
+
     return (
-        <footer className="bg-[#1E3A5F] text-white pt-16 pb-8">
-            <div className="container mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-                    {/* Brand & About */}
-                    <div className="space-y-4">
-                        <h3 className="text-2xl font-bold tracking-tight">
-                            {companyProfile?.name || "Halok Construction"}
-                        </h3>
-                        <p className="text-blue-100 text-sm leading-relaxed">
-                            {companyProfile?.description?.substring(0, 150) ||
-                                "Building Meghalaya's future with trust, durability, and modern engineering."}...
+        <footer className="bg-[#0f1f33] text-slate-300 pt-20 pb-10 border-t-4 border-blue-600">
+            <div className="container mx-auto px-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
+
+                    {/* Column 1: Brand & About */}
+                    <div className="space-y-6">
+                        <Link href="/" className="inline-block">
+                            {logoUrl ? (
+                                <div className="relative h-12 w-40 bg-white/5 rounded-lg p-2">
+                                    <Image src={logoUrl} alt={siteName} fill className="object-contain" />
+                                </div>
+                            ) : (
+                                <span className="text-2xl font-bold tracking-tight text-white">{siteName}</span>
+                            )}
+                        </Link>
+                        <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+                            {company?.description?.substring(0, 150)}...
                         </p>
-                        <div className="flex space-x-4 pt-2">
-                            {companyProfile?.facebook_url && (
-                                <a href={companyProfile.facebook_url} target="_blank" rel="noreferrer" className="text-blue-200 hover:text-white transition-colors">
-                                    <Facebook className="h-5 w-5" />
-                                    <span className="sr-only">Facebook</span>
+
+                        <div className="flex gap-4 pt-2">
+                            {company?.facebook_url && (
+                                <a href={company.facebook_url} target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all">
+                                    <Facebook className="h-4 w-4" />
                                 </a>
                             )}
-                            {companyProfile?.instagram_url && (
-                                <a href={companyProfile.instagram_url} target="_blank" rel="noreferrer" className="text-blue-200 hover:text-white transition-colors">
-                                    <Instagram className="h-5 w-5" />
-                                    <span className="sr-only">Instagram</span>
+                            {company?.instagram_url && (
+                                <a href={company.instagram_url} target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-pink-600 hover:text-white transition-all">
+                                    <Instagram className="h-4 w-4" />
                                 </a>
                             )}
-                            {companyProfile?.linkedin_url && (
-                                <a href={companyProfile.linkedin_url} target="_blank" rel="noreferrer" className="text-blue-200 hover:text-white transition-colors">
-                                    <Linkedin className="h-5 w-5" />
-                                    <span className="sr-only">LinkedIn</span>
+                            {company?.linkedin_url && (
+                                <a href={company.linkedin_url} target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all">
+                                    <Linkedin className="h-4 w-4" />
                                 </a>
                             )}
                         </div>
                     </div>
 
-                    {/* Quick Links */}
+                    {/* Column 2: Quick Links */}
                     <div>
-                        <h4 className="font-semibold text-lg mb-4 text-blue-50">Quick Links</h4>
-                        <ul className="space-y-2 text-sm text-blue-200">
-                            <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
-                            <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                            <li><Link href="/services" className="hover:text-white transition-colors">Our Services</Link></li>
-                            <li><Link href="/portfolio" className="hover:text-white transition-colors">Portfolio</Link></li>
-                            <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Services */}
-                    <div>
-                        <h4 className="font-semibold text-lg mb-4 text-blue-50">Expertise</h4>
-                        <ul className="space-y-2 text-sm text-blue-200">
-                            <li><Link href="/services/residential" className="hover:text-white transition-colors">Residential Construction</Link></li>
-                            <li><Link href="/services/commercial" className="hover:text-white transition-colors">Commercial Buildings</Link></li>
-                            <li><Link href="/services/renovations" className="hover:text-white transition-colors">Renovations</Link></li>
-                            <li><Link href="/products" className="hover:text-white transition-colors">Building Materials</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Contact Info */}
-                    <div>
-                        <h4 className="font-semibold text-lg mb-4 text-blue-50">Contact Us</h4>
-                        <ul className="space-y-4 text-sm text-blue-200">
-                            <li className="flex items-start whitespace-pre-wrap">
-                                <MapPin className="h-5 w-5 mr-3 shrink-0 text-blue-400" />
-                                <span>
-                                    {companyProfile?.address_line_1 || "Laitumkhrah Main Road"}<br />
-                                    {companyProfile?.city || "Shillong"}, {companyProfile?.state || "Meghalaya"} {companyProfile?.zip_code || "793003"}
-                                </span>
+                        <h3 className="text-white font-semibold text-lg mb-6 flex items-center gap-2">
+                            <span className="h-1 w-6 bg-blue-600 rounded-full"></span>
+                            Quick Links
+                        </h3>
+                        <ul className="space-y-3">
+                            {menus.map((menu) => (
+                                <li key={`ql-${menu.id}`}>
+                                    <Link href={menu.href} className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors">
+                                        <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                                        <span>{menu.label}</span>
+                                    </Link>
+                                </li>
+                            ))}
+                            <li>
+                                <Link href="/contact" className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors">
+                                    <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                                    <span>Contact Us</span>
+                                </Link>
                             </li>
-                            {(companyProfile?.phone_primary || companyProfile?.phone_secondary) && (
-                                <li className="flex items-center">
-                                    <Phone className="h-5 w-5 mr-3 shrink-0 text-blue-400" />
-                                    <span>
-                                        {companyProfile?.phone_primary && <a href={`tel:${companyProfile.phone_primary}`} className="hover:text-white">{companyProfile.phone_primary}</a>}
-                                        {companyProfile?.phone_primary && companyProfile?.phone_secondary && " / "}
-                                        {companyProfile?.phone_secondary && <a href={`tel:${companyProfile.phone_secondary}`} className="hover:text-white">{companyProfile.phone_secondary}</a>}
-                                    </span>
-                                </li>
-                            )}
-                            {(companyProfile?.email_primary || companyProfile?.email_secondary) && (
-                                <li className="flex flex-col space-y-2">
-                                    {companyProfile?.email_primary && (
-                                        <div className="flex items-center">
-                                            <Mail className="h-5 w-5 mr-3 shrink-0 text-blue-400" />
-                                            <a href={`mailto:${companyProfile.email_primary}`} className="hover:text-white">{companyProfile.email_primary}</a>
-                                        </div>
-                                    )}
-                                    {companyProfile?.email_secondary && (
-                                        <div className="flex items-center">
-                                            <Mail className="h-5 w-5 mr-3 shrink-0 text-transparent" />
-                                            <a href={`mailto:${companyProfile.email_secondary}`} className="hover:text-white">{companyProfile.email_secondary}</a>
-                                        </div>
-                                    )}
-                                </li>
-                            )}
                         </ul>
+                    </div>
+
+                    {/* Column 3: Services / Explore (checking submenus) */}
+                    <div>
+                        <h3 className="text-white font-semibold text-lg mb-6 flex items-center gap-2">
+                            <span className="h-1 w-6 bg-blue-600 rounded-full"></span>
+                            Explore Links
+                        </h3>
+                        {quickLinksMenu?.sub_menus && quickLinksMenu.sub_menus.length > 0 ? (
+                            <ul className="space-y-3">
+                                {quickLinksMenu.sub_menus.slice(0, 6).map((sub: any) => (
+                                    <li key={`ex-${sub.id}`}>
+                                        <Link href={sub.href} className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors">
+                                            <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                                            <span>{sub.label}</span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-slate-500 text-sm">No specialized links available right now.</p>
+                        )}
+                    </div>
+
+                    {/* Column 4: Contact Info */}
+                    <div className="space-y-6">
+                        <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+                            <span className="h-1 w-6 bg-blue-600 rounded-full"></span>
+                            Get In Touch
+                        </h3>
+
+                        <div className="space-y-4">
+                            {company?.address_line_1 && (
+                                <div className="flex items-start gap-4">
+                                    <div className="h-10 w-10 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
+                                        <MapPin className="h-5 w-5 text-blue-400" />
+                                    </div>
+                                    <div className="text-sm pt-1">
+                                        <p className="text-slate-200 font-medium">Head Office</p>
+                                        <p className="text-slate-400 mt-1">
+                                            {company.address_line_1}
+                                            {company.address_line_2 ? `, ${company.address_line_2}` : ''}
+                                            <br />
+                                            {company.city}{company.state ? `, ${company.state}` : ''} {company.zip_code}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {company?.phone_primary && (
+                                <div className="flex items-start gap-4">
+                                    <div className="h-10 w-10 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
+                                        <Phone className="h-5 w-5 text-blue-400" />
+                                    </div>
+                                    <div className="text-sm pt-1">
+                                        <p className="text-slate-200 font-medium">Call Us</p>
+                                        <p className="text-slate-400 mt-1">
+                                            <a href={`tel:${company.phone_primary}`} className="hover:text-blue-400">{company.phone_primary}</a>
+                                        </p>
+                                        {company.phone_secondary && (
+                                            <p className="text-slate-400">
+                                                <a href={`tel:${company.phone_secondary}`} className="hover:text-blue-400">{company.phone_secondary}</a>
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {company?.email_primary && (
+                                <div className="flex items-start gap-4">
+                                    <div className="h-10 w-10 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
+                                        <Mail className="h-5 w-5 text-blue-400" />
+                                    </div>
+                                    <div className="text-sm pt-1">
+                                        <p className="text-slate-200 font-medium">Email Us</p>
+                                        <p className="text-slate-400 mt-1">
+                                            <a href={`mailto:${company.email_primary}`} className="hover:text-blue-400">{company.email_primary}</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="border-t border-blue-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-blue-300">
-                    <p>© {currentYear} {companyProfile?.name || "Halok Construction"}. All rights reserved.</p>
-                    <div className="flex space-x-4 mt-4 md:mt-0">
-                        <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+                {/* Copyright */}
+                <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+                    <p>© {currentYear} {siteName}. All rights reserved.</p>
+                    <div className="flex gap-6">
+                        <Link href="/privacy" className="hover:text-slate-300">Privacy Policy</Link>
+                        <Link href="/terms" className="hover:text-slate-300">Terms of Service</Link>
                     </div>
                 </div>
             </div>

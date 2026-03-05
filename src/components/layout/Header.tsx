@@ -1,29 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { createClient } from "@/lib/supabase/client";
-import { MenuItem, SubMenuItem } from "@/types/database";
 import Image from "next/image";
+import { Menu as MenuIcon, X, ChevronDown, Mail, Phone, MapPin } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+    Sheet,
+    SheetContent,
+    SheetTrigger,
+    SheetClose,
+} from "@/components/ui/sheet";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface HeaderProps {
-    companyName: string;
-    logoUrl: string | null;
+    settings: any;
+    company: any;
+    menus: any[];
 }
 
-// Reusable MegaMenu structure 
-// To keep it simple, we'll fetch menus client-side or pass them as props.
-// For now, let's fetch client-side for dynamic updates without full reload.
-
-export default function Header({ companyName, logoUrl }: HeaderProps) {
+export default function Header({ settings, company, menus }: HeaderProps) {
     const [isScrolled, setIsScrolled] = useState(false);
-    const [menus, setMenus] = useState<(MenuItem & { sub_menus: SubMenuItem[] })[]>([]);
-    const pathname = usePathname();
-    const supabase = createClient();
+    const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -33,142 +37,183 @@ export default function Header({ companyName, logoUrl }: HeaderProps) {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    useEffect(() => {
-        async function fetchMenus() {
-            // Fetch menus and submenus
-            const { data: menuData } = await supabase
-                .from("menus")
-                .select("*")
-                .eq("is_visible", true)
-                .order("order_index", { ascending: true });
-
-            if (!menuData) return;
-
-            const { data: subMenuData } = await supabase
-                .from("sub_menus")
-                .select("*")
-                .eq("is_visible", true)
-                .order("order_index", { ascending: true });
-
-            const menusWithSub = menuData.map((menu) => ({
-                ...menu,
-                sub_menus: subMenuData?.filter((sub) => sub.menu_id === menu.id) || [],
-            }));
-
-            setMenus(menusWithSub);
-        }
-
-        fetchMenus();
-    }, [supabase]);
-
-    // Mobile menu links list
-    const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (
-        <ul className={`flex ${mobile ? "flex-col space-y-4" : "items-center space-x-8"}`}>
-            {menus.map((menu) => {
-                const isActive = pathname === menu.href || pathname.startsWith(`${menu.href}/`);
-                const hasSubmenus = menu.sub_menus.length > 0;
-
-                return (
-                    <li key={menu.id} className="relative group">
-                        <Link
-                            href={menu.href}
-                            className={`flex items-center text-sm font-medium transition-colors hover:text-blue-600 ${isActive ? "text-blue-600" : "text-slate-700"
-                                } ${mobile ? "text-lg py-2" : ""}`}
-                        >
-                            {menu.label}
-                            {hasSubmenus && !mobile && <ChevronDown className="ml-1 h-4 w-4" />}
-                        </Link>
-
-                        {/* Desktop Dropdown */}
-                        {hasSubmenus && !mobile && (
-                            <div className="absolute top-full left-0 mt-2 w-48 bg-white shadow-lg border border-slate-100 rounded-md py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                {menu.sub_menus.map((sub) => (
-                                    <Link
-                                        key={sub.id}
-                                        href={sub.href}
-                                        className="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600"
-                                    >
-                                        {sub.label}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Mobile Submenu Preview */}
-                        {hasSubmenus && mobile && (
-                            <div className="pl-4 mt-2 border-l-2 border-slate-100 space-y-2">
-                                {menu.sub_menus.map((sub) => (
-                                    <Link
-                                        key={sub.id}
-                                        href={sub.href}
-                                        className="block py-1 text-sm text-slate-500 hover:text-blue-600"
-                                    >
-                                        {sub.label}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-                    </li>
-                );
-            })}
-        </ul>
-    );
+    const siteName = settings?.site_name || "Halok Construction";
+    const logoUrl = settings?.logo_url;
 
     return (
-        <header
-            className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled
-                    ? "bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm py-4"
-                    : "bg-white py-6"
-                }`}
-        >
-            <div className="container flex items-center justify-between">
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 z-50">
-                    {logoUrl && (
-                        <div className="relative h-10 w-10">
-                            <Image
-                                src={logoUrl}
-                                alt={`${companyName} Logo`}
-                                fill
-                                className="object-contain"
-                            />
-                        </div>
-                    )}
-                    <span className="text-xl md:text-2xl font-bold tracking-tighter text-[#1E3A5F]">
-                        {companyName}
-                    </span>
-                </Link>
-
-                {/* Desktop Navigation */}
-                <nav className="hidden lg:flex items-center gap-8">
-                    <NavLinks />
-                    <Button asChild className="bg-blue-600 hover:bg-blue-700">
-                        <Link href="/contact">Get a Quote</Link>
-                    </Button>
-                </nav>
-
-                {/* Mobile Navigation Toggle */}
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon" className="lg:hidden text-slate-700">
-                            <Menu className="h-6 w-6" />
-                            <span className="sr-only">Toggle mobile menu</span>
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                        <nav className="flex flex-col gap-6 mt-8">
-                            <Link href="/" className="text-xl font-bold text-[#1E3A5F] mb-6">
-                                {companyName}
-                            </Link>
-                            <NavLinks mobile />
-                            <div className="mt-8">
-                                <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
-                                    <Link href="/contact">Get a Quote</Link>
-                                </Button>
+        <header className="fixed top-0 left-0 right-0 z-50 flex flex-col">
+            {/* Top Bar (Contact Info) */}
+            <div className={`transition-all duration-300 overflow-hidden bg-[#1E3A5F] text-white text-xs ${isScrolled ? 'h-0 opacity-0' : 'h-10 opacity-100'}`}>
+                <div className="container mx-auto px-4 h-full flex items-center justify-between">
+                    <div className="flex gap-4 sm:gap-6">
+                        {company?.email_primary && (
+                            <a href={`mailto:${company.email_primary}`} className="flex items-center gap-1.5 hover:text-blue-200 transition-colors">
+                                <Mail className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">{company.email_primary}</span>
+                            </a>
+                        )}
+                        {company?.phone_primary && (
+                            <a href={`tel:${company.phone_primary}`} className="flex items-center gap-1.5 hover:text-blue-200 transition-colors">
+                                <Phone className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">{company.phone_primary}</span>
+                            </a>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-4">
+                        {company?.city && (
+                            <div className="flex items-center gap-1.5 text-blue-100">
+                                <MapPin className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">{company.city}{company.state ? `, ${company.state}` : ''}</span>
                             </div>
-                        </nav>
-                    </SheetContent>
-                </Sheet>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Navigation Bar */}
+            <div className={`transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-3' : 'bg-white/95 backdrop-blur-sm shadow-sm py-4'}`}>
+                <div className="container mx-auto px-4 flex items-center justify-between">
+
+                    {/* Logo */}
+                    <Link href="/" className="flex items-center gap-2 z-50">
+                        {logoUrl ? (
+                            <div className="relative h-10 w-32 sm:h-12 sm:w-40">
+                                <Image src={logoUrl} alt={siteName} fill className="object-contain object-left" priority />
+                            </div>
+                        ) : (
+                            <span className="text-2xl font-bold tracking-tight text-[#1E3A5F]">{siteName}</span>
+                        )}
+                    </Link>
+
+                    {/* Desktop Navigation */}
+                    <nav className="hidden lg:flex items-center gap-8">
+                        {menus.map((menu) => (
+                            <div
+                                key={menu.id}
+                                className="relative group h-full flex items-center"
+                                onMouseEnter={() => setActiveDropdown(menu.id)}
+                                onMouseLeave={() => setActiveDropdown(null)}
+                            >
+                                {menu.sub_menus && menu.sub_menus.length > 0 ? (
+                                    <>
+                                        <button className="flex items-center gap-1 text-slate-700 hover:text-blue-600 font-medium py-2 transition-colors">
+                                            {menu.label} <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+                                        </button>
+                                        {/* Megamenu / Dropdown */}
+                                        <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-4 transition-all duration-200 ${activeDropdown === menu.id ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}`}>
+                                            <div className="bg-white rounded-xl shadow-xl ring-1 ring-slate-200 p-3 min-w-[240px] flex flex-col gap-1 relative before:absolute before:top-0 before:left-0 before:right-0 before:-translate-y-full before:h-4 before:bg-transparent">
+                                                {menu.sub_menus
+                                                    .filter((sm: any) => sm.is_visible)
+                                                    .sort((a: any, b: any) => a.order_index - b.order_index)
+                                                    .map((sub: any) => (
+                                                        <Link
+                                                            key={sub.id}
+                                                            href={sub.href}
+                                                            className="px-4 py-2.5 rounded-md hover:bg-slate-50 text-slate-700 hover:text-blue-600 transition-colors whitespace-nowrap"
+                                                        >
+                                                            {sub.label}
+                                                        </Link>
+                                                    ))}
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <Link
+                                        href={menu.href}
+                                        className="text-slate-700 hover:text-blue-600 font-medium py-2 transition-colors"
+                                    >
+                                        {menu.label}
+                                    </Link>
+                                )}
+                            </div>
+                        ))}
+                    </nav>
+
+                    {/* Call to Action & Mobile Toggle */}
+                    <div className="flex items-center gap-4 z-50">
+                        <Button asChild className="hidden sm:inline-flex bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all">
+                            <Link href="/contact">Get a Quote</Link>
+                        </Button>
+
+                        {/* Mobile Nav Sheet */}
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="lg:hidden text-slate-700">
+                                    <MenuIcon className="h-6 w-6" />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0 flex flex-col bg-white">
+                                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                                    {logoUrl ? (
+                                        <div className="relative h-8 w-24">
+                                            <Image src={logoUrl} alt={siteName} fill className="object-contain object-left" />
+                                        </div>
+                                    ) : (
+                                        <span className="text-xl font-bold tracking-tight text-[#1E3A5F]">{siteName}</span>
+                                    )}
+                                    <SheetClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-secondary">
+                                    </SheetClose>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto p-6">
+                                    <Accordion type="single" collapsible className="w-full">
+                                        {menus.map((menu) => (
+                                            menu.sub_menus && menu.sub_menus.length > 0 ? (
+                                                <AccordionItem value={menu.id} key={menu.id} className="border-b-0">
+                                                    <AccordionTrigger className="hover:no-underline py-4 text-base font-semibold text-slate-700">
+                                                        {menu.label}
+                                                    </AccordionTrigger>
+                                                    <AccordionContent className="pb-4">
+                                                        <div className="flex flex-col gap-3 pl-4 border-l-2 border-slate-100 ml-2">
+                                                            {menu.sub_menus
+                                                                .filter((sm: any) => sm.is_visible)
+                                                                .sort((a: any, b: any) => a.order_index - b.order_index)
+                                                                .map((sub: any) => (
+                                                                    <SheetClose asChild key={sub.id}>
+                                                                        <Link
+                                                                            href={sub.href}
+                                                                            className="text-slate-600 hover:text-blue-600 py-1"
+                                                                        >
+                                                                            {sub.label}
+                                                                        </Link>
+                                                                    </SheetClose>
+                                                                ))}
+                                                        </div>
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            ) : (
+                                                <div key={menu.id} className="py-4">
+                                                    <SheetClose asChild>
+                                                        <Link
+                                                            href={menu.href}
+                                                            className="text-base font-semibold text-slate-700 hover:text-blue-600 block"
+                                                        >
+                                                            {menu.label}
+                                                        </Link>
+                                                    </SheetClose>
+                                                </div>
+                                            )
+                                        ))}
+                                    </Accordion>
+                                </div>
+
+                                <div className="p-6 border-t border-slate-100 bg-slate-50 space-y-4">
+                                    <SheetClose asChild>
+                                        <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
+                                            <Link href="/contact">Get a Quote</Link>
+                                        </Button>
+                                    </SheetClose>
+                                    {company?.phone_primary && (
+                                        <div className="flex items-center justify-center gap-2 text-slate-600 text-sm">
+                                            <Phone className="h-4 w-4" />
+                                            <a href={`tel:${company.phone_primary}`} className="hover:text-blue-600">{company.phone_primary}</a>
+                                        </div>
+                                    )}
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+                    </div>
+                </div>
             </div>
         </header>
     );

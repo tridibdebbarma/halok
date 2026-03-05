@@ -1,271 +1,250 @@
 import Image from "next/image";
-<<<<<<< HEAD
 import Link from "next/link";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, CheckCircle2, Building2, HardHat, ShieldCheck, Clock } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default async function Home() {
   const supabase = await createServerSupabaseClient();
 
-  // Fetch Hero Slides
-  const { data: heroSlides } = await supabase
-    .from("hero_slides")
-    .select("*")
-    .eq("is_visible", true)
-    .order("order_index", { ascending: true })
-    .limit(1);
+  // Fetch multiple requirements in parallel
+  const [
+    { data: slides },
+    { data: company },
+    { data: services }
+  ] = await Promise.all([
+    supabase.from("hero_slides").select("*").eq("is_visible", true).order("order_index").limit(5),
+    supabase.from("company_profile").select("*").single(),
+    supabase.from("services").select("*").eq("is_visible", true).limit(6)
+  ]);
 
-  // Fetch Company Profile
-  const { data: companyProfile } = await supabase
-    .from("company_profile")
-    .select("*")
-    .single();
+  // Default fallback slide if table is empty
+  const defaultSlide = {
+    title: "Building the Future. Restoring the Past.",
+    subtitle: "Premium construction and building services tailored to your exact specifications.",
+    cta_text: "Our Services",
+    cta_link: "/services",
+    image_url: "https://images.unsplash.com/photo-1541888081622-63660a9203d9?q=80&w=2070&auto=format&fit=crop",
+  };
 
-  // Fetch Featured Services
-  const { data: featuredServices } = await supabase
-    .from("services")
-    .select("*")
-    .eq("is_visible", true)
-    .eq("is_featured", true)
-    .limit(3);
-
-  const hero = heroSlides?.[0];
+  const heroSlides = slides && slides.length > 0 ? slides : [defaultSlide];
+  const activeSlide = heroSlides[0]; // For a simpler implementation, we'll just show the first one or build a client carousel. Let's start with a static hero using the first slide.
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* 1. HERO SECTION */}
-      {hero && (
-        <section className="relative h-[80vh] min-h-[600px] w-full flex items-center justify-center overflow-hidden">
+    <>
+      {/* 1. Hero Section */}
+      <section className="relative h-[85vh] min-h-[600px] flex items-center pt-16 overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
           <Image
-            src={hero.image_url}
-            alt={hero.title}
+            src={activeSlide.image_url}
+            alt={activeSlide.title}
             fill
-            className="object-cover object-center z-0"
+            className="object-cover"
             priority
           />
-          {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 to-slate-900/50 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a192fc0] to-[#0a192f80]" />
+        </div>
 
-          <div className="container relative z-20 text-white">
-            <div className="max-w-3xl animate-in fade-in slide-in-from-bottom-8 duration-700">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight">
-                {hero.title}
-              </h1>
-              {hero.subtitle && (
-                <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-2xl font-light">
-                  {hero.subtitle}
-                </p>
-              )}
-              {hero.cta_text && hero.cta_link && (
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 h-14">
-                    <Link href={hero.cta_link}>{hero.cta_text}</Link>
-                  </Button>
-                  <Button asChild variant="outline" size="lg" className="text-black bg-white/10 hover:bg-white text-lg px-8 h-14 border-white">
-                    <Link href="/portfolio">Our Portfolio</Link>
-                  </Button>
-                </div>
-              )}
+        {/* Hero Content */}
+        <div className="container mx-auto px-4 relative z-10 text-white">
+          <div className="max-w-3xl space-y-6 animate-in slide-in-from-bottom-8 duration-1000">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1]">
+              {activeSlide.title}
+            </h1>
+            <p className="text-lg md:text-xl text-slate-200 max-w-2xl leading-relaxed">
+              {activeSlide.subtitle}
+            </p>
+            <div className="flex flex-wrap gap-4 pt-4">
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-base h-12 px-8">
+                <Link href={activeSlide.cta_link}>{activeSlide.cta_text}</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="bg-white/10 text-white border-white/20 hover:bg-white hover:text-slate-900 text-base h-12 px-8">
+                <Link href="/portfolio">View Our Work</Link>
+              </Button>
             </div>
           </div>
-        </section>
-      )}
+        </div>
 
-      {/* 2. ABOUT US PREVIEW */}
-      <section className="py-24 bg-white">
-        <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-6">
-              <div className="inline-block px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 font-semibold text-sm tracking-wide mb-2">
-                ABOUT {companyProfile?.name?.toUpperCase() || "HALOK"}
+        {/* Info Banner floating at bottom of hero */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 hidden md:block translate-y-1/2">
+          <div className="container mx-auto px-4">
+            <div className="bg-white rounded-xl shadow-xl flex items-stretch divide-x divide-slate-100 p-2 border border-slate-100">
+              <div className="flex-1 flex items-center gap-4 p-6 hover:bg-slate-50 transition-colors rounded-l-lg">
+                <div className="h-12 w-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#1E3A5F]">Certified Quality</h3>
+                  <p className="text-sm text-slate-500 mt-1">ISO 9001:2015 Compliant</p>
+                </div>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-                Building Trust Through Premium Engineering
-              </h2>
-              <p className="text-lg text-slate-600 leading-relaxed">
-                {companyProfile?.description}
-              </p>
-
-              <ul className="space-y-4 pt-4">
-                <li className="flex items-center text-slate-700">
-                  <CheckCircle2 className="h-6 w-6 text-blue-600 mr-3 shrink-0" />
-                  <span className="font-medium text-lg">Over {companyProfile?.years_of_experience || 10} Years of Excellence</span>
-                </li>
-                <li className="flex items-center text-slate-700">
-                  <CheckCircle2 className="h-6 w-6 text-blue-600 mr-3 shrink-0" />
-                  <span className="font-medium text-lg">{companyProfile?.total_projects || "50+"} Successful Projects Delivered</span>
-                </li>
-                <li className="flex items-center text-slate-700">
-                  <CheckCircle2 className="h-6 w-6 text-blue-600 mr-3 shrink-0" />
-                  <span className="font-medium text-lg">ISO Certified & PWD Approved Contractor</span>
-                </li>
-              </ul>
-
-              <div className="pt-8">
-                <Button asChild variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50">
-                  <Link href="/about" className="flex items-center">
-                    Learn More About Us <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+              <div className="flex-1 flex items-center gap-4 p-6 hover:bg-slate-50 transition-colors">
+                <div className="h-12 w-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <HardHat className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#1E3A5F]">{company?.years_of_experience || 15}+ Years</h3>
+                  <p className="text-sm text-slate-500 mt-1">Industry Experience</p>
+                </div>
               </div>
-            </div>
-
-            <div className="relative">
-              <div className="relative h-[600px] rounded-2xl overflow-hidden shadow-2xl">
-                <Image
-                  src="https://images.unsplash.com/photo-1541888086225-f674ce8824f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-                  alt="Construction Site"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              {/* Floating Stat Card */}
-              <div className="absolute -bottom-8 -left-8 bg-blue-600 text-white p-8 rounded-xl shadow-xl hidden md:block w-64 border-4 border-white">
-                <div className="text-5xl font-bold mb-2">{companyProfile?.total_projects || "50"}+</div>
-                <div className="text-blue-100 font-medium text-lg">Projects Completed Across Meghalaya</div>
+              <div className="flex-1 flex items-center gap-4 p-6 hover:bg-slate-50 transition-colors rounded-r-lg">
+                <div className="h-12 w-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <Clock className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#1E3A5F]">On Time Delivery</h3>
+                  <p className="text-sm text-slate-500 mt-1">{company?.total_projects || 500}+ Projects Completed</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. FEATURED SERVICES */}
-      <section className="py-24 bg-slate-50">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-4xl font-bold mb-6">Our Expertise</h2>
-            <p className="text-lg text-slate-600">
-              We provide comprehensive construction solutions tailored to withstand the unique geography and climate of our region.
+      {/* 2. About Us Sneak Peek */}
+      <section className="py-24 md:pt-36 md:pb-24 bg-slate-50">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div className="relative aspect-square md:aspect-auto md:h-[600px] rounded-2xl overflow-hidden shadow-2xl">
+              <Image
+                src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2070&auto=format&fit=crop"
+                fill
+                alt="Construction Team"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 ring-1 ring-inset ring-black/10 rounded-2xl"></div>
+
+              {/* Floating Badge */}
+              <div className="absolute bottom-6 left-6 bg-white p-6 rounded-xl shadow-lg flex items-center gap-4 max-w-[280px]">
+                <div className="text-4xl font-extrabold text-blue-600 leading-none">
+                  {company?.years_of_experience || 15}
+                </div>
+                <div className="text-sm font-semibold text-[#1E3A5F] leading-tight">
+                  Years of excellence in construction
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="inline-block px-4 py-1.5 bg-blue-50 text-blue-700 font-semibold text-sm rounded-full">
+                About Our Company
+              </div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#1E3A5F] leading-tight">
+                Building trust through quality and precision.
+              </h2>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                {company?.description || "We are a premier construction company dedicated to redefining skylines and building sustainable communities. With a relentless focus on quality and innovation, we bring architectural visions to life."}
+              </p>
+
+              <ul className="space-y-4 pt-4">
+                {[
+                  "Uncompromising commitment to safety standards",
+                  "Expert team of engineers and architects",
+                  "Sustainable and eco-friendly building practices",
+                  "Transparent project management tracking"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 text-green-500 shrink-0" />
+                    <span className="font-medium text-slate-700">{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="pt-6">
+                <Button asChild size="lg" className="bg-[#1E3A5F] hover:bg-[#2a4e7f]">
+                  <Link href="/about">Learn More About Us <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Featured Services */}
+      <section className="py-24 bg-white relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+            <h2 className="text-3xl md:text-5xl font-bold text-[#1E3A5F]">Our Core Capabilities</h2>
+            <p className="text-slate-500 text-lg">
+              We offer end-to-end construction services tailored to meet the demands of modern infrastructure development.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredServices?.map((service) => (
-              <div key={service.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 border border-slate-100 group">
-                <div className="relative h-64 overflow-hidden">
-                  <Image
-                    src={service.main_image_url || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"}
-                    alt={service.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 text-sm font-semibold rounded-full text-blue-700 shadow-sm">
-                    {service.category}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services && services.length > 0 ? (
+              services.map((service: any) => (
+                <Card key={service.id} className="group border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full bg-slate-50/50 hover:bg-white">
+                  <div className="relative h-64 overflow-hidden">
+                    <Image
+                      src={service.main_image_url || "https://images.unsplash.com/photo-1541888081622-63660a9203d9?q=80&w=2070&auto=format&fit=crop"}
+                      alt={service.name}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
+                    <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 text-xs font-bold text-blue-700 rounded-full shadow-sm">
+                      {service.category}
+                    </div>
                   </div>
-                </div>
-                <div className="p-8">
-                  <h3 className="text-2xl font-bold mb-4 group-hover:text-blue-600 transition-colors">
-                    <Link href={`/services/${service.slug}`}>
+                  <CardContent className="flex flex-col flex-1 p-6 z-10">
+                    <h3 className="text-xl font-bold text-[#1E3A5F] mb-3 group-hover:text-blue-600 transition-colors">
                       {service.name}
+                    </h3>
+                    <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-1">
+                      {service.short_description}
+                    </p>
+                    <Link
+                      href={`/services/${service.slug}`}
+                      className="inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors mt-auto"
+                    >
+                      Explore Service <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
-                  </h3>
-                  <p className="text-slate-600 mb-6 line-clamp-3">
-                    {service.short_description}
-                  </p>
-                  <Button asChild variant="ghost" className="text-blue-600 hover:text-blue-800 hover:bg-transparent px-0 group-hover:translate-x-2 transition-transform">
-                    <Link href={`/services/${service.slug}`} className="flex items-center">
-                      Explore Service <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              // Fallback demo content if no services
+              [1, 2, 3].map((i) => (
+                <div key={i} className="h-80 bg-slate-100 rounded-xl animate-pulse" />
+              ))
+            )}
           </div>
 
           <div className="text-center mt-12">
-            <Button asChild size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
+            <Button asChild variant="outline" size="lg" className="border-blue-200 text-blue-700 hover:bg-blue-50">
               <Link href="/services">View All Services</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* 4. CTA SECTION */}
-      <section className="relative py-24 bg-blue-600 overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-10">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
-        <div className="container relative z-10 text-center text-white max-w-4xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to start your next project?</h2>
-          <p className="text-xl text-blue-100 mb-10">
-            Contact us today for a consultation and estimate. Experience the difference of working with Meghalaya's premier construction firm.
-          </p>
-          <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-10 h-16 shadow-lg">
-            <Link href="/contact">Get in Touch Today</Link>
-          </Button>
+      {/* 4. CTA Section */}
+      <section className="py-24 bg-[#1E3A5F] relative overflow-hidden">
+        {/* Subtle architectural background pattern */}
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight">
+              Ready to start your next big project?
+            </h2>
+            <p className="text-xl text-blue-100/90 leading-relaxed max-w-2xl mx-auto">
+              Get in touch with our experts today to discuss your vision, requirements, and get a comprehensive project estimate.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Button asChild size="lg" className="bg-white text-[#1E3A5F] hover:bg-slate-100 h-14 px-8 text-lg w-full sm:w-auto">
+                <Link href="/contact">Request a Quote</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10 h-14 px-8 text-lg w-full sm:w-auto">
+                <Link href="/portfolio">Our Portfolio</Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
-=======
-
-export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
->>>>>>> 09a97839627de0a73691290943407c294371e3d1
-    </div>
+    </>
   );
 }
