@@ -36,7 +36,6 @@ export async function POST(request: Request) {
                     phone,
                     subject,
                     message,
-                    is_read: false,
                     status: "unread",
                 },
             ])
