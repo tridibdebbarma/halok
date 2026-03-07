@@ -20,10 +20,10 @@ export async function POST(request: Request) {
             );
         }
 
-        // Use direct client for API routes (no cookie dependency)
+        // Use direct client with SERVICE ROLE for API routes to bypass RLS safely
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
         // Insert into contacts table
