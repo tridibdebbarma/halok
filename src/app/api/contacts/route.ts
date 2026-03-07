@@ -3,10 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
 export async function POST(request: Request) {
-    // Lazy init — avoids crash at build time when env var isn't available
-    const resend = new Resend(process.env.RESEND_API_KEY || "");
-
     try {
+        // Lazy and safe init — avoids crash if env var is missing on Vercel
+        // Only initialize Resend if the key actually exists
+        const resendApiKey = process.env.RESEND_API_KEY;
+        const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
         const body = await request.json();
         const { name, email, phone, subject, message } = body;
 
@@ -59,12 +61,14 @@ export async function POST(request: Request) {
             const companyEmail = settings?.contact_email || "contact-us@halok.co.in";
             const siteName = settings?.site_name || "Halok Construction";
 
-            // Notification email to company
-            await resend.emails.send({
-                from: `${siteName} Website <onboarding@resend.dev>`,
-                to: [companyEmail],
-                subject: `New Contact Inquiry: ${subject}`,
-                html: `
+            // Only try to send email if Resend is configured
+            if (resend) {
+                // Notification email to company
+                await resend.emails.send({
+                    from: `${siteName} Website <onboarding@resend.dev>`,
+                    to: [companyEmail],
+                    subject: `New Contact Inquiry: ${subject}`,
+                    html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                         <div style="background: #1E3A5F; color: white; padding: 24px; border-radius: 8px 8px 0 0;">
                             <h2 style="margin: 0;">New Contact Form Submission</h2>
@@ -98,14 +102,14 @@ export async function POST(request: Request) {
                         </div>
                     </div>
                 `,
-            });
+                });
 
-            // Auto-reply confirmation to the user
-            await resend.emails.send({
-                from: `${siteName} <onboarding@resend.dev>`,
-                to: [email],
-                subject: `Thank you for contacting ${siteName}`,
-                html: `
+                // Auto-reply confirmation to the user
+                await resend.emails.send({
+                    from: `${siteName} <onboarding@resend.dev>`,
+                    to: [email],
+                    subject: `Thank you for contacting ${siteName}`,
+                    html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                         <div style="background: #1E3A5F; color: white; padding: 24px; border-radius: 8px 8px 0 0;">
                             <h2 style="margin: 0;">Thank You, ${name}!</h2>
@@ -127,7 +131,10 @@ export async function POST(request: Request) {
                         </div>
                     </div>
                 `,
-            });
+                });
+            } else {
+                console.warn("Emails not sent: RESEND_API_KEY is not configured");
+            }
         } catch (emailError) {
             // Log email error but don't fail the request — the form submission was saved
             console.error("Email sending failed:", emailError);

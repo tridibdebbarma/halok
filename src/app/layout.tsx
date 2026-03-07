@@ -9,6 +9,8 @@ import Footer from "@/components/layout/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const revalidate = 0; // Force dynamic rendering so layout doesn't use stale cached DB data
+
 export async function generateMetadata(): Promise<Metadata> {
   const supabase = await createServerSupabaseClient();
   const { data: settings } = await supabase.from("site_settings").select("*").single();
