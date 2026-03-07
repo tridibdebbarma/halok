@@ -11,9 +11,9 @@ UPDATE public.company_profile SET
   city = 'Agartala',
   state = 'Tripura',
   zip_code = '799006',
-  phone_primary = '+91-9774254272',
+  phone_primary = '+91-9863547532',
   phone_secondary = '+91-7005723632',
-  certifications = ARRAY['ISO 9001:2015', 'Tripura State PWD Class 1 Contractor'];
+  certifications = ARRAY['ISO 9001:2015', 'Tripura State  Class 1 Contractor'];
 
 -- Update site settings
 UPDATE public.site_settings SET

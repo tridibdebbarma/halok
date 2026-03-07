@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: Request) {
+    // Lazy init — avoids crash at build time when env var isn't available
+    const resend = new Resend(process.env.RESEND_API_KEY || "");
+
     try {
         const body = await request.json();
         const { name, email, phone, subject, message } = body;
@@ -17,7 +18,11 @@ export async function POST(request: Request) {
             );
         }
 
-        const supabase = await createServerSupabaseClient();
+        // Use direct client for API routes (no cookie dependency)
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
 
         // Insert into contacts table
         const { data, error } = await supabase

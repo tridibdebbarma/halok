@@ -40,7 +40,7 @@ export default function Header({ settings, company, menus }: HeaderProps) {
     const siteName = settings?.site_name || "Halok Construction";
     const logoUrl = settings?.logo_url;
     const companyEmail = company?.email_primary || "contact-us@halok.co.in";
-    const companyPhone = company?.phone_primary || "+91-9774254272";
+    const companyPhone = company?.phone_primary || "+91-9863547532";
     const companyCity = company?.city || "Agartala";
     const companyState = company?.state || "Tripura";
 

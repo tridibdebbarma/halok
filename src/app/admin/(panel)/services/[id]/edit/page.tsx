@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,7 +38,8 @@ const formSchema = z.object({
     features: z.string().optional(), // Comma separated for MVP
 });
 
-export default function EditServicePage({ params }: { params: { id: string } }) {
+export default function EditServicePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
@@ -65,7 +66,7 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                 const { data, error } = await supabase
                     .from("services")
                     .select("*")
-                    .eq("id", params.id)
+                    .eq("id", id)
                     .single();
 
                 if (error) throw error;
@@ -91,7 +92,7 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
             }
         }
         fetchService();
-    }, [params.id, supabase, form, router]);
+    }, [id, supabase, form, router]);
 
     // Auto-generate slug from name if empty
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,7 +128,7 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                 updated_at: new Date().toISOString(),
             };
 
-            const { error } = await supabase.from("services").update(payload).eq("id", params.id);
+            const { error } = await supabase.from("services").update(payload).eq("id", id);
 
             if (error) throw error;
 

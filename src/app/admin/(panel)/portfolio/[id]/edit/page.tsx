@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,7 +41,8 @@ const formSchema = z.object({
     galleryUrls: z.array(z.object({ url: z.string().url("Must be a valid URL") })).optional(),
 });
 
-export default function EditPortfolioPage({ params }: { params: { id: string } }) {
+export default function EditPortfolioPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
@@ -75,7 +76,7 @@ export default function EditPortfolioPage({ params }: { params: { id: string } }
                 const { data, error } = await supabase
                     .from("portfolio")
                     .select("*")
-                    .eq("id", params.id)
+                    .eq("id", id)
                     .single();
 
                 if (error) throw error;
@@ -113,7 +114,7 @@ export default function EditPortfolioPage({ params }: { params: { id: string } }
             }
         }
         fetchProject();
-    }, [params.id, supabase, form, router]);
+    }, [id, supabase, form, router]);
 
     // Auto-generate slug from title
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,7 +149,7 @@ export default function EditPortfolioPage({ params }: { params: { id: string } }
                 updated_at: new Date().toISOString(),
             };
 
-            const { error } = await supabase.from("portfolio").update(payload).eq("id", params.id);
+            const { error } = await supabase.from("portfolio").update(payload).eq("id", id);
 
             if (error) throw error;
 

@@ -133,7 +133,7 @@ export default function Footer({ settings, company, menus }: FooterProps) {
                                 <div className="text-sm pt-1">
                                     <p className="text-slate-200 font-medium">Call Us</p>
                                     <p className="text-slate-400 mt-1">
-                                        <a href={`tel:${company?.phone_primary || '+91-9774254272'}`} className="hover:text-[var(--theme-accent-light,#3b82f6)]">{company?.phone_primary || '+91-9774254272'}</a>
+                                        <a href={`tel:${company?.phone_primary || '+91-9863547532'}`} className="hover:text-[var(--theme-accent-light,#3b82f6)]">{company?.phone_primary || '+91-9863547532'}</a>
                                     </p>
                                     {company?.phone_secondary && (
                                         <p className="text-slate-400">

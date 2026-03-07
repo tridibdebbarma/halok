@@ -16,7 +16,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO public.company_profile (
   name, description, mission, vision, 
   address_line_1, city, state, zip_code,
-  phone_primary, phone_secondary, email_primary, email_secondary,
+  phone_primary, email_primary, email_secondary,
   years_of_experience, total_projects, certifications
 ) VALUES (
   'Halok Construction Co.',
@@ -24,7 +24,7 @@ INSERT INTO public.company_profile (
   'To deliver high-quality, sustainable, and innovative construction solutions that empower communities across Tripura and Northeast India.',
   'To be the most trusted and sought-after construction partner in the region.',
   'Agartala Main Road', 'Agartala', 'Tripura', '799001',
-  '+91-9774254272', '+91-7005723632', 'contact-us@halok.co.in', 'tridib@halok.co.in',
+  '+91-9863547532', 'contact-us@halok.co.in', 'tridib@halok.co.in',
   10, 50, ARRAY['ISO 9001:2015', 'Tripura State PWD Class 1 Contractor']
 )
 ON CONFLICT DO NOTHING;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,7 +42,8 @@ const formSchema = z.object({
     ).optional(),
 });
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
+export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
@@ -73,7 +74,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 const { data, error } = await supabase
                     .from("products")
                     .select("*")
-                    .eq("id", params.id)
+                    .eq("id", id)
                     .single();
 
                 if (error) throw error;
@@ -106,7 +107,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             }
         }
         fetchProduct();
-    }, [params.id, supabase, form, router]);
+    }, [id, supabase, form, router]);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSaving(true);
@@ -133,7 +134,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 updated_at: new Date().toISOString(),
             };
 
-            const { error } = await supabase.from("products").update(payload).eq("id", params.id);
+            const { error } = await supabase.from("products").update(payload).eq("id", id);
 
             if (error) throw error;
 
