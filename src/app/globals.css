@@ -131,6 +131,43 @@ h4,
 h5,
 h6 {
   font-weight: 700;
-  color: #1E3A5F;
-  /* Navy blue for headings */
+  /* Color is set via Tailwind classes per-component to avoid contrast issues */
+}
+
+/* ================================================
+   THEME SYSTEM — 4 preset themes
+   Usage: set data-theme="blue|emerald|amber|slate" on <html>
+   ================================================ */
+
+/* Default: Blue (Navy) — Classic professional construction */
+:root,
+[data-theme="blue"] {
+  --theme-primary: #1E3A5F;
+  --theme-primary-light: #2a4e7f;
+  --theme-accent: #2563eb;
+  --theme-accent-light: #3b82f6;
+}
+
+/* Emerald — Fresh, eco-friendly, sustainable */
+[data-theme="emerald"] {
+  --theme-primary: #064E3B;
+  --theme-primary-light: #065f46;
+  --theme-accent: #059669;
+  --theme-accent-light: #10b981;
+}
+
+/* Amber — Warm, earthy, premium */
+[data-theme="amber"] {
+  --theme-primary: #78350F;
+  --theme-primary-light: #92400e;
+  --theme-accent: #d97706;
+  --theme-accent-light: #f59e0b;
+}
+
+/* Slate — Modern, sleek, corporate */
+[data-theme="slate"] {
+  --theme-primary: #1E293B;
+  --theme-primary-light: #334155;
+  --theme-accent: #6366f1;
+  --theme-accent-light: #818cf8;
 }

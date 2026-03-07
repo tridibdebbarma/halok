@@ -35,7 +35,7 @@ export async function POST() {
                 const existingUser = users?.users?.find((u: any) => u.email === email);
 
                 if (existingUser) {
-                    await supabaseAdmin.auth.admin.updateUser(existingUser.id, {
+                    await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
                         password,
                         email_confirm: true,
                     });

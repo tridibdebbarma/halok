@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { PackageOpen, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { PackageOpen } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,9 +30,9 @@ export default async function ProductsPage() {
 
     return (
         <>
-            <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-[#1E3A5F] text-white">
+            <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-[var(--theme-primary,#1E3A5F)] text-white">
                 <div className="container mx-auto px-4 text-center max-w-4xl">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Construction Materials & Products</h1>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">Construction Materials & Products</h1>
                     <p className="text-xl text-blue-100/90 leading-relaxed">
                         High-quality construction products, materials, and equipment sourced from trusted manufacturers.
                     </p>
@@ -44,7 +45,7 @@ export default async function ProductsPage() {
                         Object.keys(categorizedProducts).map((category) => (
                             <div key={category} className="mb-20 last:mb-0">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <h2 className="text-3xl font-bold text-[#1E3A5F]">{category}</h2>
+                                    <h2 className="text-3xl font-bold text-[var(--theme-primary,#1E3A5F)]">{category}</h2>
                                     <div className="h-px bg-slate-200 flex-1"></div>
                                 </div>
 
@@ -64,14 +65,14 @@ export default async function ProductsPage() {
                                                 ) : (
                                                     <PackageOpen className="h-16 w-16 text-slate-200" />
                                                 )}
-                                                <Badge className="absolute top-4 left-4 bg-blue-100 text-blue-800 hover:bg-blue-200 pointer-events-none border-none">
+                                                <Badge className="absolute top-4 left-4 bg-blue-100 text-[var(--theme-accent,#2563eb)] hover:bg-blue-200 pointer-events-none border-none">
                                                     {product.category}
                                                 </Badge>
                                             </div>
 
                                             <CardContent className="flex flex-col flex-1 p-5">
                                                 <div className="flex justify-between items-start mb-3 gap-2">
-                                                    <h3 className="font-bold text-[#1E3A5F] text-lg leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
+                                                    <h3 className="font-bold text-[var(--theme-primary,#1E3A5F)] text-lg leading-tight group-hover:text-[var(--theme-accent,#2563eb)] transition-colors line-clamp-2">
                                                         {product.name}
                                                     </h3>
                                                 </div>
@@ -82,7 +83,7 @@ export default async function ProductsPage() {
 
                                                 {product.price && (
                                                     <div className="mb-4">
-                                                        <span className="font-bold text-xl text-[#1E3A5F]">{product.price}</span>
+                                                        <span className="font-bold text-xl text-[var(--theme-primary,#1E3A5F)]">{product.price}</span>
                                                     </div>
                                                 )}
 
@@ -98,9 +99,12 @@ export default async function ProductsPage() {
                                                     </div>
                                                 )}
 
-                                                <a href={`/contact?subject=Inquiry about Product: ${product.name}`} className="w-full mt-auto inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-slate-100 hover:text-accent-foreground h-10 px-4 py-2 text-blue-600 border-blue-200 hover:border-blue-300">
+                                                <Link
+                                                    href={`/contact?subject=Inquiry about Product: ${product.name}`}
+                                                    className="w-full mt-auto inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors h-10 px-4 py-2 text-[var(--theme-accent,#2563eb)] border border-blue-200 hover:border-blue-300 hover:bg-slate-100"
+                                                >
                                                     Inquire Now
-                                                </a>
+                                                </Link>
                                             </CardContent>
                                         </Card>
                                     ))}
@@ -110,7 +114,7 @@ export default async function ProductsPage() {
                     ) : (
                         <div className="text-center py-20 bg-white rounded-2xl border border-slate-100 border-dashed">
                             <PackageOpen className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                            <h3 className="text-xl font-bold text-[#1E3A5F] mb-2">Catalog Update in Progress</h3>
+                            <h3 className="text-xl font-bold text-[var(--theme-primary,#1E3A5F)] mb-2">Catalog Update in Progress</h3>
                             <p className="text-slate-500">We are currently updating our products catalog. Please check back soon or contact us directly.</p>
                         </div>
                     )}

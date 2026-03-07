@@ -42,6 +42,8 @@ const formSchema = z.object({
     years_of_experience: z.number().optional().or(z.string().transform(val => val === "" ? undefined : Number(val))),
     total_projects: z.number().optional().or(z.string().transform(val => val === "" ? undefined : Number(val))),
     certifications: z.string().optional(), // We'll handle this as a comma-separated string for simplicity in UI, then convert to array
+    about_highlights: z.string().optional(), // Comma-separated about us bullet points
+    google_maps_embed_url: z.string().optional(),
 });
 
 export default function CompanyProfilePage() {
@@ -68,6 +70,8 @@ export default function CompanyProfilePage() {
             years_of_experience: undefined,
             total_projects: undefined,
             certifications: "",
+            about_highlights: "",
+            google_maps_embed_url: "",
         },
     });
 
@@ -103,6 +107,8 @@ export default function CompanyProfilePage() {
                         years_of_experience: data.years_of_experience || undefined,
                         total_projects: data.total_projects || undefined,
                         certifications: data.certifications ? data.certifications.join(", ") : "",
+                        about_highlights: data.about_highlights ? data.about_highlights.join(", ") : "",
+                        google_maps_embed_url: data.google_maps_embed_url || "",
                     });
                 }
             } catch (err) {
@@ -123,6 +129,10 @@ export default function CompanyProfilePage() {
                 ? values.certifications.split(",").map((c) => c.trim()).filter(Boolean)
                 : [];
 
+            const processedHighlights = values.about_highlights
+                ? values.about_highlights.split(",").map((h) => h.trim()).filter(Boolean)
+                : [];
+
             const payload = {
                 name: values.name,
                 description: values.description,
@@ -141,6 +151,8 @@ export default function CompanyProfilePage() {
                 years_of_experience: values.years_of_experience || null,
                 total_projects: values.total_projects || null,
                 certifications: processedCertifications,
+                about_highlights: processedHighlights,
+                google_maps_embed_url: values.google_maps_embed_url || null,
             };
 
             let response;
@@ -309,6 +321,38 @@ export default function CompanyProfilePage() {
                                             <Input placeholder="ISO 9001:2015, Green Building Certified" {...field} />
                                         </FormControl>
                                         <FormDescription>Separate multiple certifications with a comma.</FormDescription>
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="about_highlights"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>About Us Highlights (Comma separated)</FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder="Uncompromising commitment to safety, Expert team of engineers, Sustainable building practices"
+                                                className="min-h-[80px]"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>These bullet points appear in the About Us section on the homepage. Separate each point with a comma.</FormDescription>
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="google_maps_embed_url"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Google Maps Embed URL</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="https://www.google.com/maps/embed?pb=..." {...field} />
+                                        </FormControl>
+                                        <FormDescription>Paste the Google Maps embed URL for the Contact page map.</FormDescription>
                                     </FormItem>
                                 )}
                             />

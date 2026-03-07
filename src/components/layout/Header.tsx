@@ -39,33 +39,31 @@ export default function Header({ settings, company, menus }: HeaderProps) {
 
     const siteName = settings?.site_name || "Halok Construction";
     const logoUrl = settings?.logo_url;
+    const companyEmail = company?.email_primary || "contact-us@halok.co.in";
+    const companyPhone = company?.phone_primary || "+91-9774254272";
+    const companyCity = company?.city || "Agartala";
+    const companyState = company?.state || "Tripura";
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 flex flex-col">
             {/* Top Bar (Contact Info) */}
-            <div className={`transition-all duration-300 overflow-hidden bg-[#1E3A5F] text-white text-xs ${isScrolled ? 'h-0 opacity-0' : 'h-10 opacity-100'}`}>
+            <div className={`transition-all duration-300 overflow-hidden bg-[var(--theme-primary,#1E3A5F)] text-white text-xs ${isScrolled ? 'h-0 opacity-0' : 'h-10 opacity-100'}`}>
                 <div className="container mx-auto px-4 h-full flex items-center justify-between">
                     <div className="flex gap-4 sm:gap-6">
-                        {company?.email_primary && (
-                            <a href={`mailto:${company.email_primary}`} className="flex items-center gap-1.5 hover:text-blue-200 transition-colors">
-                                <Mail className="h-3.5 w-3.5" />
-                                <span className="hidden sm:inline">{company.email_primary}</span>
-                            </a>
-                        )}
-                        {company?.phone_primary && (
-                            <a href={`tel:${company.phone_primary}`} className="flex items-center gap-1.5 hover:text-blue-200 transition-colors">
-                                <Phone className="h-3.5 w-3.5" />
-                                <span className="hidden sm:inline">{company.phone_primary}</span>
-                            </a>
-                        )}
+                        <a href={`mailto:${companyEmail}`} className="flex items-center gap-1.5 hover:text-blue-200 transition-colors">
+                            <Mail className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">{companyEmail}</span>
+                        </a>
+                        <a href={`tel:${companyPhone}`} className="flex items-center gap-1.5 hover:text-blue-200 transition-colors">
+                            <Phone className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">{companyPhone}</span>
+                        </a>
                     </div>
                     <div className="flex items-center gap-4">
-                        {company?.city && (
-                            <div className="flex items-center gap-1.5 text-blue-100">
-                                <MapPin className="h-3.5 w-3.5" />
-                                <span className="hidden sm:inline">{company.city}{company.state ? `, ${company.state}` : ''}</span>
-                            </div>
-                        )}
+                        <div className="flex items-center gap-1.5 text-blue-100">
+                            <MapPin className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">{companyCity}{companyState ? `, ${companyState}` : ''}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -81,7 +79,7 @@ export default function Header({ settings, company, menus }: HeaderProps) {
                                 <Image src={logoUrl} alt={siteName} fill className="object-contain object-left" priority />
                             </div>
                         ) : (
-                            <span className="text-2xl font-bold tracking-tight text-[#1E3A5F]">{siteName}</span>
+                            <span className="text-2xl font-bold tracking-tight text-[var(--theme-primary,#1E3A5F)]">{siteName}</span>
                         )}
                     </Link>
 
@@ -96,7 +94,7 @@ export default function Header({ settings, company, menus }: HeaderProps) {
                             >
                                 {menu.sub_menus && menu.sub_menus.length > 0 ? (
                                     <>
-                                        <button className="flex items-center gap-1 text-slate-700 hover:text-blue-600 font-medium py-2 transition-colors">
+                                        <button className="flex items-center gap-1 text-slate-700 hover:text-[var(--theme-accent,#2563eb)] font-medium py-2 transition-colors">
                                             {menu.label} <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                                         </button>
                                         {/* Megamenu / Dropdown */}
@@ -109,7 +107,7 @@ export default function Header({ settings, company, menus }: HeaderProps) {
                                                         <Link
                                                             key={sub.id}
                                                             href={sub.href}
-                                                            className="px-4 py-2.5 rounded-md hover:bg-slate-50 text-slate-700 hover:text-blue-600 transition-colors whitespace-nowrap"
+                                                            className="px-4 py-2.5 rounded-md hover:bg-slate-50 text-slate-700 hover:text-[var(--theme-accent,#2563eb)] transition-colors whitespace-nowrap"
                                                         >
                                                             {sub.label}
                                                         </Link>
@@ -120,7 +118,7 @@ export default function Header({ settings, company, menus }: HeaderProps) {
                                 ) : (
                                     <Link
                                         href={menu.href}
-                                        className="text-slate-700 hover:text-blue-600 font-medium py-2 transition-colors"
+                                        className="text-slate-700 hover:text-[var(--theme-accent,#2563eb)] font-medium py-2 transition-colors"
                                     >
                                         {menu.label}
                                     </Link>
@@ -131,7 +129,7 @@ export default function Header({ settings, company, menus }: HeaderProps) {
 
                     {/* Call to Action & Mobile Toggle */}
                     <div className="flex items-center gap-4 z-50">
-                        <Button asChild className="hidden sm:inline-flex bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all">
+                        <Button asChild className="hidden sm:inline-flex bg-[var(--theme-accent,#2563eb)] hover:opacity-90 text-white shadow-md hover:shadow-lg transition-all">
                             <Link href="/contact">Get a Quote</Link>
                         </Button>
 
@@ -149,7 +147,7 @@ export default function Header({ settings, company, menus }: HeaderProps) {
                                             <Image src={logoUrl} alt={siteName} fill className="object-contain object-left" />
                                         </div>
                                     ) : (
-                                        <span className="text-xl font-bold tracking-tight text-[#1E3A5F]">{siteName}</span>
+                                        <span className="text-xl font-bold tracking-tight text-[var(--theme-primary,#1E3A5F)]">{siteName}</span>
                                     )}
                                     <SheetClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-secondary">
                                     </SheetClose>
@@ -172,7 +170,7 @@ export default function Header({ settings, company, menus }: HeaderProps) {
                                                                     <SheetClose asChild key={sub.id}>
                                                                         <Link
                                                                             href={sub.href}
-                                                                            className="text-slate-600 hover:text-blue-600 py-1"
+                                                                            className="text-slate-600 hover:text-[var(--theme-accent,#2563eb)] py-1"
                                                                         >
                                                                             {sub.label}
                                                                         </Link>
@@ -186,7 +184,7 @@ export default function Header({ settings, company, menus }: HeaderProps) {
                                                     <SheetClose asChild>
                                                         <Link
                                                             href={menu.href}
-                                                            className="text-base font-semibold text-slate-700 hover:text-blue-600 block"
+                                                            className="text-base font-semibold text-slate-700 hover:text-[var(--theme-accent,#2563eb)] block"
                                                         >
                                                             {menu.label}
                                                         </Link>
@@ -199,16 +197,14 @@ export default function Header({ settings, company, menus }: HeaderProps) {
 
                                 <div className="p-6 border-t border-slate-100 bg-slate-50 space-y-4">
                                     <SheetClose asChild>
-                                        <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
+                                        <Button asChild className="w-full bg-[var(--theme-accent,#2563eb)] hover:opacity-90 text-white">
                                             <Link href="/contact">Get a Quote</Link>
                                         </Button>
                                     </SheetClose>
-                                    {company?.phone_primary && (
-                                        <div className="flex items-center justify-center gap-2 text-slate-600 text-sm">
-                                            <Phone className="h-4 w-4" />
-                                            <a href={`tel:${company.phone_primary}`} className="hover:text-blue-600">{company.phone_primary}</a>
-                                        </div>
-                                    )}
+                                    <div className="flex items-center justify-center gap-2 text-slate-600 text-sm">
+                                        <Phone className="h-4 w-4" />
+                                        <a href={`tel:${companyPhone}`} className="hover:text-[var(--theme-accent,#2563eb)]">{companyPhone}</a>
+                                    </div>
                                 </div>
                             </SheetContent>
                         </Sheet>

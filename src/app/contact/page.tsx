@@ -15,9 +15,9 @@ export default async function ContactPage() {
 
     return (
         <>
-            <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-[#1E3A5F] text-white">
+            <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-[var(--theme-primary,#1E3A5F)] text-white">
                 <div className="container mx-auto px-4 text-center max-w-4xl">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Contact Our Experts</h1>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">Contact Our Experts</h1>
                     <p className="text-xl text-blue-100/90 leading-relaxed">
                         Ready to start your next big project or have questions about our services? We're here to help.
                     </p>
@@ -32,7 +32,7 @@ export default async function ContactPage() {
                             {/* Left Column: Contact Info */}
                             <div className="lg:col-span-2 space-y-6">
                                 <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 h-full">
-                                    <h3 className="text-2xl font-bold text-[#1E3A5F] mb-8">Get In Touch</h3>
+                                    <h3 className="text-2xl font-bold text-[var(--theme-primary,#1E3A5F)] mb-8">Get In Touch</h3>
 
                                     <div className="space-y-8">
                                         {company?.address_line_1 && (
@@ -41,7 +41,7 @@ export default async function ContactPage() {
                                                     <MapPin className="h-6 w-6" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-[#1E3A5F] mb-1">Head Office</h4>
+                                                    <h4 className="font-bold text-[var(--theme-primary,#1E3A5F)] mb-1">Head Office</h4>
                                                     <p className="text-slate-600 leading-relaxed text-sm">
                                                         {company.address_line_1}
                                                         {company.address_line_2 ? `, ${company.address_line_2}` : ''}<br />
@@ -57,7 +57,7 @@ export default async function ContactPage() {
                                                     <Phone className="h-6 w-6" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-[#1E3A5F] mb-1">Call Us</h4>
+                                                    <h4 className="font-bold text-[var(--theme-primary,#1E3A5F)] mb-1">Call Us</h4>
                                                     <p className="text-slate-600">
                                                         <a href={`tel:${company.phone_primary}`} className="hover:text-blue-600 font-medium">{company.phone_primary}</a>
                                                     </p>
@@ -76,7 +76,7 @@ export default async function ContactPage() {
                                                     <Mail className="h-6 w-6" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-[#1E3A5F] mb-1">Email Us</h4>
+                                                    <h4 className="font-bold text-[var(--theme-primary,#1E3A5F)] mb-1">Email Us</h4>
                                                     <p className="text-slate-600">
                                                         <a href={`mailto:${company.email_primary}`} className="hover:text-blue-600 font-medium">{company.email_primary}</a>
                                                     </p>
@@ -89,7 +89,7 @@ export default async function ContactPage() {
                                                 <Clock className="h-6 w-6" />
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-[#1E3A5F] mb-1">Business Hours</h4>
+                                                <h4 className="font-bold text-[var(--theme-primary,#1E3A5F)] mb-1">Business Hours</h4>
                                                 <p className="text-slate-600 text-sm leading-relaxed">
                                                     Monday - Friday: 9:00 AM - 6:00 PM<br />
                                                     Saturday: 9:00 AM - 2:00 PM<br />
@@ -130,7 +130,7 @@ export default async function ContactPage() {
                 {/* Placeholder for iframe map since we don't have a specific API key, we use a standard generic google maps embed or a decorative placeholder */}
                 <iframe
                     title="Office Location"
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.276417539665!2d88.42761851506526!3d22.56875888518451!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0275adea7afc71%3A0xe5a3c26ba6ac2913!2sSalt%20Lake%20Sector%20V%2C%20Bidhannagar%2C%20Kolkata%2C%20West%20Bengal!5e0!3m2!1sen!2sin!4v1684305888258!5m2!1sen!2sin"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d57890.06937869498!2d91.24762544863282!3d23.836737399999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3753f4c6c3b3e5c3%3A0x2a8c7d5e6d5e6b3a!2sAgartala%2C%20Tripura!5e0!3m2!1sen!2sin!4v1709830000000!5m2!1sen!2sin"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Save, Globe } from "lucide-react";
+import { Loader2, Save, Globe, Palette, Check } from "lucide-react";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
@@ -23,6 +23,37 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import ImageUploader from "@/components/ImageUploader";
 
+const THEMES = [
+    {
+        id: "blue",
+        name: "Classic Blue",
+        description: "Professional navy & blue — the trusted construction look.",
+        primary: "#1E3A5F",
+        accent: "#2563eb",
+    },
+    {
+        id: "emerald",
+        name: "Emerald Green",
+        description: "Fresh & sustainable — eco-friendly, modern feel.",
+        primary: "#064E3B",
+        accent: "#059669",
+    },
+    {
+        id: "amber",
+        name: "Warm Amber",
+        description: "Earthy & premium — warm tones, rugged charm.",
+        primary: "#78350F",
+        accent: "#d97706",
+    },
+    {
+        id: "slate",
+        name: "Slate Modern",
+        description: "Sleek & corporate — modern, tech-forward look.",
+        primary: "#1E293B",
+        accent: "#6366f1",
+    },
+];
+
 const formSchema = z.object({
     id: z.string().optional(),
     site_name: z.string().min(2, "Site name is required"),
@@ -31,6 +62,7 @@ const formSchema = z.object({
     contact_email: z.string().email("Must be a valid email").optional().or(z.literal('')),
     logo_url: z.string().optional().nullable(),
     favicon_url: z.string().optional().nullable(),
+    active_theme: z.string().default("blue"),
 });
 
 export default function SiteSettingsAdminPage() {
@@ -47,8 +79,11 @@ export default function SiteSettingsAdminPage() {
             contact_email: "",
             logo_url: null,
             favicon_url: null,
+            active_theme: "blue",
         },
     });
+
+    const activeTheme = form.watch("active_theme");
 
     useEffect(() => {
         async function fetchSettings() {
@@ -59,7 +94,7 @@ export default function SiteSettingsAdminPage() {
                     .limit(1)
                     .single();
 
-                if (error && error.code !== "PGRST116") { // Ignore no rows error for now, we'll insert one
+                if (error && error.code !== "PGRST116") {
                     throw error;
                 }
 
@@ -72,6 +107,7 @@ export default function SiteSettingsAdminPage() {
                         contact_email: data.contact_email || "",
                         logo_url: data.logo_url,
                         favicon_url: data.favicon_url,
+                        active_theme: data.active_theme || "blue",
                     });
                 }
             } catch (error: any) {
@@ -93,18 +129,17 @@ export default function SiteSettingsAdminPage() {
                 contact_email: values.contact_email,
                 logo_url: values.logo_url,
                 favicon_url: values.favicon_url,
+                active_theme: values.active_theme,
                 updated_at: new Date().toISOString(),
             };
 
             if (values.id) {
-                // Update existing
                 const { error } = await supabase
                     .from("site_settings")
                     .update(payload)
                     .eq("id", values.id);
                 if (error) throw error;
             } else {
-                // Insert new
                 const { data, error } = await supabase
                     .from("site_settings")
                     .insert([payload])
@@ -114,7 +149,9 @@ export default function SiteSettingsAdminPage() {
                 form.setValue("id", data.id);
             }
 
-            toast.success("Site settings updated successfully");
+            toast.success("Site settings updated successfully", {
+                description: "Refresh the public pages to see the changes.",
+            });
 
         } catch (error: any) {
             console.error(error);
@@ -139,7 +176,7 @@ export default function SiteSettingsAdminPage() {
             <div className="flex items-center gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-[#1E3A5F]">Global Site Settings</h1>
-                    <p className="text-slate-500 mt-1">Configure foundational details like site name, SEO, and main contact points.</p>
+                    <p className="text-slate-500 mt-1">Configure foundational details like site name, SEO, theme, and main contact points.</p>
                 </div>
             </div>
 
@@ -228,6 +265,64 @@ export default function SiteSettingsAdminPage() {
                                     />
                                 </CardContent>
                             </Card>
+
+                            {/* Theme Selector Card */}
+                            <Card className="border-slate-200">
+                                <CardContent className="p-6 space-y-6">
+                                    <div className="flex items-center gap-2 mb-2 text-[#1E3A5F]">
+                                        <Palette className="h-5 w-5" />
+                                        <h3 className="text-xl font-semibold">Site Theme</h3>
+                                    </div>
+                                    <p className="text-slate-500 text-sm">
+                                        Choose a color theme for the entire website. Changes take effect after saving and refreshing the site.
+                                    </p>
+
+                                    <FormField
+                                        control={form.control}
+                                        name="active_theme"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <div className="grid sm:grid-cols-2 gap-4">
+                                                        {THEMES.map((theme) => (
+                                                            <button
+                                                                key={theme.id}
+                                                                type="button"
+                                                                onClick={() => field.onChange(theme.id)}
+                                                                className={`relative text-left p-5 rounded-xl border-2 transition-all duration-200 ${field.value === theme.id
+                                                                        ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-200'
+                                                                        : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
+                                                                    }`}
+                                                            >
+                                                                {field.value === theme.id && (
+                                                                    <div className="absolute top-3 right-3 h-6 w-6 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                                                                        <Check className="h-4 w-4" />
+                                                                    </div>
+                                                                )}
+                                                                <div className="flex items-center gap-3 mb-3">
+                                                                    <div className="flex gap-1.5">
+                                                                        <div
+                                                                            className="h-8 w-8 rounded-lg shadow-inner border border-black/10"
+                                                                            style={{ backgroundColor: theme.primary }}
+                                                                        />
+                                                                        <div
+                                                                            className="h-8 w-8 rounded-lg shadow-inner border border-black/10"
+                                                                            style={{ backgroundColor: theme.accent }}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <h4 className="font-bold text-slate-800 text-sm">{theme.name}</h4>
+                                                                <p className="text-slate-500 text-xs mt-1">{theme.description}</p>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </CardContent>
+                            </Card>
                         </div>
 
                         {/* Right Column: Images */}
@@ -276,6 +371,27 @@ export default function SiteSettingsAdminPage() {
                                                 </FormItem>
                                             )}
                                         />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Theme Preview Card */}
+                            <Card className="border-slate-200 overflow-hidden">
+                                <div
+                                    className="h-16 flex items-center justify-center text-white text-sm font-semibold tracking-wider uppercase"
+                                    style={{ backgroundColor: THEMES.find(t => t.id === activeTheme)?.primary || '#1E3A5F' }}
+                                >
+                                    Theme Preview
+                                </div>
+                                <CardContent className="p-4 space-y-3">
+                                    <div
+                                        className="h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+                                        style={{ backgroundColor: THEMES.find(t => t.id === activeTheme)?.accent || '#2563eb' }}
+                                    >
+                                        Button Color
+                                    </div>
+                                    <div className="text-xs text-slate-500 text-center">
+                                        {THEMES.find(t => t.id === activeTheme)?.name || 'Classic Blue'}
                                     </div>
                                 </CardContent>
                             </Card>

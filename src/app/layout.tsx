@@ -43,8 +43,11 @@ export default async function RootLayout({
     supabase.from("menus").select("*, sub_menus(*)").eq("is_visible", true).order("order_index")
   ]);
 
+  // Active theme from DB, fallback to blue
+  const activeTheme = settings?.active_theme || "blue";
+
   return (
-    <html lang="en">
+    <html lang="en" data-theme={activeTheme}>
       <body className={inter.className}>
         <Header
           settings={settings}

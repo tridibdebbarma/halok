@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, HardHat, Hammer, PaintBucket, Wrench } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,9 +29,9 @@ export default async function ServicesPage() {
 
     return (
         <>
-            <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-[#1E3A5F] text-white">
+            <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-[var(--theme-primary,#1E3A5F)] text-white">
                 <div className="container mx-auto px-4 text-center max-w-4xl">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Our Services</h1>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">Our Services</h1>
                     <p className="text-xl text-blue-100/90 leading-relaxed">
                         From groundbreaking to final inspection, we provide end-to-end capabilities across commercial, residential, and infrastructure projects.
                     </p>
@@ -44,7 +44,7 @@ export default async function ServicesPage() {
                         Object.keys(categorizedServices).map((category) => (
                             <div key={category} className="mb-20 last:mb-0">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <h2 className="text-3xl font-bold text-[#1E3A5F]">{category}</h2>
+                                    <h2 className="text-3xl font-bold text-[var(--theme-primary,#1E3A5F)]">{category}</h2>
                                     <div className="h-px bg-slate-200 flex-1"></div>
                                 </div>
 
@@ -61,7 +61,7 @@ export default async function ServicesPage() {
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
                                             </div>
                                             <CardContent className="flex flex-col flex-1 p-6 z-10">
-                                                <h3 className="text-xl font-bold text-[#1E3A5F] mb-3 group-hover:text-blue-600 transition-colors">
+                                                <h3 className="text-xl font-bold text-[var(--theme-primary,#1E3A5F)] mb-3 group-hover:text-[var(--theme-accent,#2563eb)] transition-colors">
                                                     {service.name}
                                                 </h3>
                                                 <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-1">
@@ -69,7 +69,7 @@ export default async function ServicesPage() {
                                                 </p>
                                                 <Link
                                                     href={`/services/${service.slug}`}
-                                                    className="inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors mt-auto"
+                                                    className="inline-flex items-center text-sm font-bold text-[var(--theme-accent,#2563eb)] hover:opacity-80 transition-colors mt-auto"
                                                 >
                                                     Explore details <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                                                 </Link>
